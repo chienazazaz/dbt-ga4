@@ -3,7 +3,7 @@
 {{
     config(
         materialized = 'incremental',
-        incremental_strategy = 'insert_overwrite',
+        incremental_strategy = 'merge',
         tags = ["incremental"],
         on_schema_change = 'sync_all_columns',
         unique_key = ['session_key'],
@@ -12,6 +12,9 @@
             "data_type": "date",
             "granularity": "day"
         },
+        merge_exclude_columns = [
+
+        ]
     )
 }}
 
@@ -36,7 +39,7 @@ with session_events as (
     and event_name != 'session_start'
     and event_name != 'first_visit'
     {% if is_incremental() %}
-      and event_date_dt >= date_sub(current_date, interval {{var('static_incremental_days',3) | int}} day)
+      and date(pv.first_page_view_event_time) >= date_sub(current_date, interval {{var('static_incremental_days',3) | int}} day)
     {% endif %}
    ),
 set_default_channel_grouping as (
