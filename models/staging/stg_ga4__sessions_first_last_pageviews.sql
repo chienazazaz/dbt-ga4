@@ -1,7 +1,7 @@
 {{
     config(
         materialized = 'incremental',
-        incremental_strategy = 'insert_overwrite',
+        incremental_strategy = 'merge',
         unique_key = ['session_key'],
         tags = ["incremental"],
         partition_by={
@@ -9,7 +9,11 @@
             "data_type": "timestamp",
             "granularity": "day"
         },
-        on_schema_change = 'sync_all_columns'
+        on_schema_change = 'sync_all_columns',
+        merge_exclude_columns = [
+            'first_page_view_event_key',
+            'first_page_view_event_time'
+        ]
     )
 }}
 with page_views_first_last as (

@@ -27,7 +27,7 @@ with session_first_event as
     where e.event_name != 'first_visit' 
     and e.event_name != 'session_start'
     {% if is_incremental() %}
-      and e.event_date_dt >= date_sub(current_date, interval {{var('static_incremental_days',3) | int}} day)
+      and date(pv.first_page_view_event_time)  >= date_sub(current_date, interval {{var('static_incremental_days',3) | int}} day)
     {% endif %}
     qualify row_number() over(partition by e.session_key order by event_timestamp) = 1
 ),

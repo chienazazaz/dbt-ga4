@@ -1,3 +1,5 @@
+  -- depends_on: {{ ref('stg_ga4__sessions_first_last_pageviews') }}
+
 {{
     config(
         materialized = 'incremental',
@@ -15,18 +17,22 @@
 
 with session_events as (
     select
-        session_key
-        ,event_timestamp
+        events.session_key
+        ,events.event_timestamp
         ,events.event_source
-        ,event_medium
-        ,event_campaign
-        ,event_content
-        ,event_term
-        ,source_category
-        ,event_date_dt
+        ,events.event_medium
+        ,events.event_campaign
+        ,events.event_content
+        ,events.event_term
+        ,source_categories.source_category
+        ,events.event_date_dt
     from {{ref('stg_ga4__events')}} events
     left join {{ref('ga4_source_categories')}} source_categories on events.event_source = source_categories.source
-    where session_key is not null
+    {% if is_incremental() %}
+    inner join {{ref("stg_ga4__sessions_first_last_pageviews")}} pv 
+    on events.session_key = pv.session_key and events.event_date_dt = date(pv.first_page_view_event_time)    
+    {% endif %}
+    where events.session_key is not null
     and event_name != 'session_start'
     and event_name != 'first_visit'
     {% if is_incremental() %}
@@ -53,4 +59,5 @@ session_source as (
     from set_default_channel_grouping
     WINDOW session_window AS (PARTITION BY session_key ORDER BY event_timestamp ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 )
-select distinct * from session_source
+select distinct * 
+from session_source
