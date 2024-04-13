@@ -34,7 +34,8 @@ page_views_by_session_key as (
         session_key,
         first_page_view_event_key,
         last_page_view_event_key,
-        first_page_view_event_time
+        first_page_view_event_time,
+        first_page_view_event_date
     from page_views_first_last
 )
 
