@@ -23,7 +23,7 @@ with page_views_first_last as (
         LAST_VALUE(event_key) OVER (PARTITION BY session_key ORDER BY event_timestamp ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_page_view_event_key,
         FIRST_VALUE(timestamp_micros(event_timestamp)) OVER (PARTITION BY session_key ORDER BY event_timestamp ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS first_page_view_event_time,
     from {{ref('stg_ga4__events')}}
-    where event_name = 'page_view'
+    where event_name = 'session_start'
     {% if is_incremental() %}
         and event_date_dt >= date_sub(current_date, interval {{var('static_incremental_days',3) | int}} day)
     {% endif %}
