@@ -2,7 +2,7 @@
 {{
     config(
         materialized = 'incremental',
-        incremental_strategy = 'merge',
+        incremental_strategy = 'insert_overwrite',
         unique_key = ['session_key','client_key'],
         tags = ["incremental"],
         partition_by={
@@ -14,7 +14,7 @@
     )
 }}
 
-select
+    select
     client_key,
     session_key,
     stream_id,
@@ -31,7 +31,7 @@ select
             , sum({{ce}}_count) as count_{{ce}}
         {% endfor %}
     {% endif %}
-from {{ref('fct_ga4__sessions_daily')}}
+from {{ref('fct_ga4__sessions_daily')}} s
 {% if is_incremental() %}
   where session_partition_date >= date_sub(current_date, interval {{var('static_incremental_days',3)}} day)
 {% endif %}

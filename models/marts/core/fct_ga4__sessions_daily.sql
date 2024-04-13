@@ -1,7 +1,7 @@
 {{
     config(
         materialized = 'incremental',
-        incremental_strategy = 'merge',
+        incremental_strategy = 'insert_overwrite',
         tags = ["incremental"],
         partition_by={
             "field": "session_partition_date",
@@ -28,7 +28,7 @@ with session_metrics as (
         ifnull(max(session_engaged), 0) as session_partition_max_session_engaged,
         sum(engagement_time_msec) as session_partition_sum_engagement_time_msec,
         min(session_number) as session_number
-    from {{ref('stg_ga4__events')}}
+    from {{ref('stg_ga4__events')}} e
     where session_key is not null
     {% if is_incremental() %}
             and event_date_dt >= date_sub(current_date, interval {{var('static_incremental_days',3) | int}} day)

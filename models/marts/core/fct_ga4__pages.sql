@@ -1,7 +1,7 @@
 {{
     config(
         materialized = 'incremental',
-        incremental_strategy = 'merge',
+        incremental_strategy = 'insert_overwrite',
         unique_key = ['event_date_dt', 'stream_id' , 'page_location'],
         tags = ["incremental"],
         partition_by={
