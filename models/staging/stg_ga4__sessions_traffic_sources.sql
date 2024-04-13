@@ -33,7 +33,7 @@ with session_events as (
     left join {{ref('ga4_source_categories')}} source_categories on events.event_source = source_categories.source
     {% if is_incremental() %}
     inner join {{ref("stg_ga4__sessions_first_last_pageviews")}} pv 
-    on events.session_key = pv.session_key and events.event_date_dt = date(pv.first_page_view_event_time)    
+    on events.session_key = pv.session_key and events.event_date_dt = date(pv.first_page_view_event_date)    
     {% endif %}
     where events.session_key is not null
     and event_name != 'session_start'

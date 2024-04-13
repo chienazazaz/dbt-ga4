@@ -23,7 +23,7 @@ with session_first_event as
     select e.*
     from {{ref('stg_ga4__events')}} e
     inner join {{ref("stg_ga4__sessions_first_last_pageviews")}} pv 
-    on e.session_key = pv.session_key and e.event_date_dt = date(pv.first_page_view_event_time)
+    on e.session_key = pv.session_key and e.event_date_dt = date(pv.first_page_view_event_date)
     where e.event_name != 'first_visit' 
     and e.event_name != 'session_start'
     {% if is_incremental() %}
