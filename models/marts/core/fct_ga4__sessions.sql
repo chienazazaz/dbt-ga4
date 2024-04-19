@@ -14,6 +14,7 @@
     )
 }}
 
+   with aggregated as (
     select
     client_key,
     session_key,
@@ -36,4 +37,13 @@ from {{ref('fct_ga4__sessions_daily')}} s
   where session_partition_date >= date_sub(current_date, interval {{var('static_incremental_days',3)}} day)
 {% endif %}
 group by 1,2,3
+)
 
+select 
+aggregated.* 
+from aggregated
+{% if is_incremental() %}
+  inner join {{ ref("stg_ga4__sessions_first_last_pageviews") }} pv 
+  on pv.session_key = aggregated.session_key and pv.first_page_view_event_date = aggregated.session_start_date
+  where pv.first_page_view_event_date >= date_sub(current_date, interval {{var('static_incremental_days',3)}} day)
+{% endif %}
